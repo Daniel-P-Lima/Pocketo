@@ -25,7 +25,7 @@
         <div class="text-center space-y-1">
             <p class="text-lg font-bold text-gray-800">Financas</p>
             <p class="text-xs text-gray-500">Versao 1.0.0</p>
-            <p class="text-xs text-gray-400 mt-2">Feito com Laravel + NativePHP</p>
+            <p class="text-xs text-gray-400 mt-2">Feito com Laravel + Vue.js</p>
         </div>
     </div>
 </div>
