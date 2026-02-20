@@ -1,6 +1,6 @@
 <script setup>
-import { computed, watch } from 'vue'
-import { useForm } from '@inertiajs/vue3'
+import { computed, watch } from 'vue';
+import { useForm, router } from '@inertiajs/vue3';
 
 const props = defineProps({
     transaction: {
@@ -15,10 +15,8 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
-})
+});
 
-// ── Form state (Inertia) ─────────────────────────────────────────────────────
-// useForm seeds initial values and gives us .errors, .processing, .put() etc.
 const form = useForm({
     type: props.transaction.type ?? 'expense',
     amount: props.transaction.amount ?? '',
@@ -26,306 +24,171 @@ const form = useForm({
     category_id: props.transaction.category_id ?? null,
     date: props.transaction.date ?? '',
     notes: props.transaction.notes ?? '',
-})
+});
 
-const displayAmount = computed(() => {
-    if (!form.amount && form.amount !== 0) return '';
-    const num = parseFloat(form.amount);
-    if (isNaN(num)) return '';
-    return num.toLocaleString('pt-BR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-})
-
-function handleAmountInput(event) {
-    const raw = event.target.value.replace(/[^\d,]/g, '').replace(',', '.')
-    form.amount = raw === '' ? '' : parseFloat(raw) || ''
-}
-
-const currentCategories = computed(() =>
+const visibleCategories = computed(() =>
     form.type === 'income' ? props.incomeCategories : props.expenseCategories
-)
+);
 
 watch(() => form.type, () => {
-    form.category_id = null
-})
+    form.category_id = null;
+});
 
-function handleSubmit() {
-    form.put(`/transactions/${props.transaction.id}`)
+const displayAmount = computed({
+    get() {
+        if (!form.amount && form.amount !== 0) return '';
+        const num = parseFloat(form.amount);
+        if (isNaN(num)) return '';
+        return num.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    },
+    set(val) {
+        const digits = val.replace(/\D/g, '');
+        const num = parseFloat(digits) || 0;
+        form.amount = parseFloat((num / 100).toFixed(2));
+    },
+});
+
+function submit() {
+    form.put(`/transactions/${props.transaction.id}`);
+}
+
+function destroy() {
+    if (confirm('Excluir esta transação?')) {
+        router.delete(`/transactions/${props.transaction.id}`);
+    }
 }
 </script>
 
 <template>
-    <div class="edit-transaction">
-        <form @submit.prevent="handleSubmit" class="form-body">
+    <form @submit.prevent="submit" class="px-4 py-4 space-y-5">
 
-            <!-- Type Toggle -->
-            <div class="type-toggle">
-                <button type="button" :class="['toggle-btn', 'expense', { active: form.type === 'expense' }]"
-                    @click="form.type = 'expense'">
+        <!-- Type toggle -->
+        <div class="flex gap-2">
+            <label class="flex-1 cursor-pointer">
+                <input type="radio" v-model="form.type" value="expense" class="peer hidden">
+                <div class="text-center py-3 rounded-xl border border-gray-300 text-sm font-semibold cursor-pointer
+                            transition-all duration-200
+                            peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-500 peer-checked:shadow-md
+                            active:scale-[0.97]">
                     Despesa
-                </button>
-                <button type="button" :class="['toggle-btn', 'income', { active: form.type === 'income' }]"
-                    @click="form.type = 'income'">
-                    Receita
-                </button>
-            </div>
-
-            <!-- Amount -->
-            <div class="field">
-                <label class="field-label">Valor</label>
-                <div class="amount-wrapper">
-                    <span class="currency-prefix">R$</span>
-                    <input type="text" inputmode="numeric" class="amount-input" placeholder="0,00"
-                        :value="displayAmount" @input="handleAmountInput" />
                 </div>
-                <p v-if="form.errors.amount" class="field-error">{{ form.errors.amount }}</p>
-            </div>
+            </label>
+            <label class="flex-1 cursor-pointer">
+                <input type="radio" v-model="form.type" value="income" class="peer hidden">
+                <div class="text-center py-3 rounded-xl border border-gray-300 text-sm font-semibold cursor-pointer
+                            transition-all duration-200
+                            peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 peer-checked:shadow-md
+                            active:scale-[0.97]">
+                    Receita
+                </div>
+            </label>
+        </div>
 
-            <!-- Description -->
-            <div class="field">
-                <label class="field-label">Descrição</label>
-                <input type="text" v-model="form.description" required maxlength="255" class="text-input" />
-                <p v-if="form.errors.description" class="field-error">{{ form.errors.description }}</p>
+        <!-- Amount -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+            <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                <input type="text" inputmode="numeric"
+                       v-model="displayAmount"
+                       class="w-full bg-white border border-gray-300 rounded-xl pl-10 pr-4 py-3 text-lg font-semibold
+                              transition-all duration-200
+                              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md"
+                       placeholder="0,00">
             </div>
+            <p v-if="form.errors.amount" class="text-red-500 text-xs mt-1">{{ form.errors.amount }}</p>
+        </div>
 
-            <!-- Category -->
-            <div class="field">
-                <label class="field-label">Categoria</label>
-                <div class="categories-grid">
-                    <label v-for="cat in currentCategories" :key="cat.id" class="category-item"
-                        :class="{ selected: form.category_id == cat.id }">
-                        <input type="radio" name="category_id" :value="cat.id" v-model="form.category_id"
-                            class="sr-only" />
-                        <span class="cat-icon">{{ cat.icon }}</span>
-                        <span class="cat-name">{{ cat.name }}</span>
+        <!-- Description -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+            <input type="text" v-model="form.description" required maxlength="255"
+                   class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm
+                          transition-all duration-200
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md"
+                   placeholder="Ex: Supermercado">
+            <p v-if="form.errors.description" class="text-red-500 text-xs mt-1">{{ form.errors.description }}</p>
+        </div>
+
+        <!-- Category -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+            <Transition name="fade" mode="out-in">
+                <div :key="form.type" class="grid grid-cols-4 gap-2">
+                    <label v-for="cat in visibleCategories" :key="cat.id" class="cursor-pointer">
+                        <input type="radio" v-model="form.category_id" :value="cat.id" class="peer hidden">
+                        <div class="flex flex-col items-center gap-1 py-2.5 rounded-xl border border-gray-200 text-xs
+                                    transition-all duration-200
+                                    peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:border-blue-500 peer-checked:shadow-md
+                                    hover:border-gray-300 hover:shadow-sm
+                                    active:scale-[0.95]">
+                            <span class="text-xl">{{ cat.icon }}</span>
+                            <span class="text-gray-600 truncate w-full text-center px-1">{{ cat.name }}</span>
+                        </div>
                     </label>
                 </div>
-                <p v-if="form.errors.category_id" class="field-error">{{ form.errors.category_id }}</p>
-            </div>
+            </Transition>
+            <p v-if="form.errors.category_id" class="text-red-500 text-xs mt-1">{{ form.errors.category_id }}</p>
+        </div>
 
-            <!-- Date -->
-            <div class="field">
-                <label class="field-label">Data</label>
-                <input type="date" v-model="form.date" required class="text-input" />
-                <p v-if="form.errors.date" class="field-error">{{ form.errors.date }}</p>
-            </div>
+        <!-- Date -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+            <input type="date" v-model="form.date" required
+                   class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm
+                          transition-all duration-200
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md">
+            <p v-if="form.errors.date" class="text-red-500 text-xs mt-1">{{ form.errors.date }}</p>
+        </div>
 
-            <!-- Notes -->
-            <div class="field">
-                <label class="field-label">Observações <span class="optional">(opcional)</span></label>
-                <textarea v-model="form.notes" rows="2" maxlength="1000" class="textarea-input" />
-            </div>
+        <!-- Notes -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+                Observações <span class="font-normal text-gray-400">(opcional)</span>
+            </label>
+            <textarea v-model="form.notes" rows="2" maxlength="1000"
+                      class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm resize-none
+                             transition-all duration-200
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md"
+                      placeholder="Detalhes adicionais..."></textarea>
+        </div>
 
-            <button type="submit" class="submit-btn" :disabled="form.processing">
+        <!-- Actions -->
+        <div class="space-y-2">
+            <button type="submit" :disabled="form.processing"
+                    class="w-full bg-blue-600 text-white font-semibold py-3.5 rounded-xl
+                           transition-all duration-200
+                           hover:bg-blue-700 hover:shadow-lg
+                           active:scale-[0.98] active:bg-blue-800
+                           disabled:opacity-50 disabled:hover:shadow-none disabled:active:scale-100">
                 {{ form.processing ? 'Salvando...' : 'Atualizar' }}
             </button>
-        </form>
-    </div>
+
+            <button type="button" @click="destroy"
+                    class="w-full bg-white text-red-500 font-semibold py-3.5 rounded-xl border border-red-200
+                           transition-all duration-200
+                           hover:bg-red-50 hover:border-red-300
+                           active:scale-[0.98]">
+                Excluir transação
+            </button>
+        </div>
+    </form>
 </template>
 
 <style scoped>
-.edit-transaction {
-    padding: 1rem;
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
-.form-body {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+.fade-enter-from {
+    opacity: 0;
+    transform: translateY(4px);
 }
-
-/* ── Type Toggle ── */
-.type-toggle {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.toggle-btn {
-    flex: 1;
-    padding: 0.75rem;
-    border-radius: 0.75rem;
-    border: 1.5px solid #d1d5db;
-    background: white;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
-
-.toggle-btn.expense.active {
-    background: #ef4444;
-    color: white;
-    border-color: #ef4444;
-}
-
-.toggle-btn.income.active {
-    background: #10b981;
-    color: white;
-    border-color: #10b981;
-}
-
-.toggle-btn:not(.active):active {
-    background: #f3f4f6;
-}
-
-/* ── Fields ── */
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.field-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-}
-
-.optional {
-    font-weight: 400;
-    color: #9ca3af;
-}
-
-.field-error {
-    font-size: 0.75rem;
-    color: #ef4444;
-    margin: 0;
-}
-
-/* ── Amount ── */
-.amount-wrapper {
-    position: relative;
-}
-
-.currency-prefix {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6b7280;
-    font-size: 0.875rem;
-    pointer-events: none;
-}
-
-.amount-input {
-    width: 100%;
-    background: white;
-    border: 1.5px solid #d1d5db;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem 0.75rem 2.75rem;
-    font-size: 1.125rem;
-    font-weight: 600;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.amount-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-/* ── Text inputs ── */
-.text-input,
-.textarea-input {
-    width: 100%;
-    background: white;
-    border: 1.5px solid #d1d5db;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    box-sizing: border-box;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    font-family: inherit;
-}
-
-.text-input:focus,
-.textarea-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-.textarea-input {
-    resize: none;
-}
-
-/* ── Categories ── */
-.categories-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.5rem;
-}
-
-.category-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.625rem 0.25rem;
-    border-radius: 0.75rem;
-    border: 1.5px solid #e5e7eb;
-    cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.category-item:active {
-    background: #f9fafb;
-}
-
-.category-item.selected {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-}
-
-.cat-icon {
-    font-size: 1.25rem;
-    line-height: 1;
-}
-
-.cat-name {
-    font-size: 0.7rem;
-    color: #4b5563;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
-    padding: 0 2px;
-}
-
-/* ── Submit ── */
-.submit-btn {
-    width: 100%;
-    background: #2563eb;
-    color: white;
-    font-weight: 600;
-    padding: 0.875rem;
-    border-radius: 0.75rem;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background 0.15s;
-}
-
-.submit-btn:disabled {
-    background: #93c5fd;
-    cursor: not-allowed;
-}
-
-
-/* Screen-reader only (replaces Tailwind sr-only) */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(-4px);
 }
 </style>

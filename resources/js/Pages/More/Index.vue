@@ -1,6 +1,6 @@
 <template>
     <div class="px-4 py-4 space-y-3">
-        <a href="{{ route('categories.index') }}"
+        <a href="/categories"
         class="flex items-center gap-4 bg-white rounded-xl px-4 py-4 shadow-sm active:bg-gray-50">
             <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

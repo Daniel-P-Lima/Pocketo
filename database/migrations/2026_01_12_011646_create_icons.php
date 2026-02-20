@@ -6,20 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('icons', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
-            $table->string('color', 7);
-            $table->string('type', 10); // income, expense, both
-            $table->boolean('is_default')->default(false);
+            $table->string('icon')->collation('utf8mb4_bin');
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('icons');
     }
 };

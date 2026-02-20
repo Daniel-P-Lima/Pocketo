@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import CreateButton from "../../Components/CreateButton.vue";
 import { Link } from '@inertiajs/vue3';
 
 import MonthPicker from '../../Components/MonthPicker.vue';
@@ -73,15 +74,8 @@ function formatBrl(amount) {
         </Transition>
     </div>
 
-    <!-- FAB -->
-    <Link href="/transactions/create" class="fixed bottom-20 right-4 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center z-40
-                 transition-all duration-200
-                 hover:bg-blue-700 hover:shadow-xl hover:scale-105
-                 active:scale-95 active:bg-blue-800 addButton">
-        <svg class="w-7 h-7 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-    </Link>
+    <CreateButton link="/transactions/create"></CreateButton>
+    
 </template>
 
 <style scoped>

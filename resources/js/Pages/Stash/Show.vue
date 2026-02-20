@@ -10,6 +10,10 @@ const stashGoalAmount = computed(() => props.stash.goal_amount);
 const stashPurpose = computed(() => props.stash.purpose);
 const stashDate = computed(() => new Date(props.stash.created_at).toString());
 
+function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleDateString('pt-BR');
+}
+
 </script>
 <template>
     <div class="px-4 py-4 space-y-4">
@@ -32,7 +36,7 @@ const stashDate = computed(() => new Date(props.stash.created_at).toString());
 
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-500">Data</span>
-                    <span class="text-sm font-medium text-gray-900">{{ stashDate }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ formatDate(stashDate) }}</span>
                 </div>
             </div>
         </div>
