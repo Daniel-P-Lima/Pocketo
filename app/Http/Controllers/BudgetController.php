@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Budget;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class BudgetController extends Controller
 {
@@ -20,7 +21,14 @@ class BudgetController extends Controller
         $totalBudgeted = $budgets->sum('amount');
         $totalSpent = $budgets->sum('spent');
 
-        return view('budgets.index', compact('budgets', 'month', 'year', 'totalBudgeted', 'totalSpent'));
+        return Inertia::render('Budgets/Index', [
+            'budgets'       => $budgets, 
+            'month'         => $month, 
+            'year'          => $year, 
+            'totalBudgeted' => $totalBudgeted, 
+            'totalSpent'    => $totalSpent,
+            'header'        => 'Orçamentos'
+        ]);
     }
 
     public function create(Request $request)

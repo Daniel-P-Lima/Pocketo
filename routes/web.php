@@ -18,7 +18,7 @@ Route::resource('transactions', TransactionController::class);
 Route::resource('stash', StashController::class);
 
 // Budgets
-Route::resource('budgets', BudgetController::class)->except(['show']);
+Route::resource('budgets', BudgetController::class);
 
 // Categories
 Route::resource('categories', CategoryController::class);

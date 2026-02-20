@@ -1,3 +1,8 @@
+<script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
+
+</script>
+
 <template>
     <div class="px-4 py-4 space-y-3">
         <a href="/categories"
@@ -18,8 +23,9 @@
 
         <div class="bg-white rounded-xl px-4 py-4 shadow-sm mt-6">
             <div class="text-center space-y-1">
-                <p class="text-lg font-bold text-gray-800">Financas</p>
-                <p class="text-xs text-gray-500">Versao 1.0.0</p>
+                <p class="text-lg font-bold text-gray-800">Pocketo</p>
+                <p class="text-xs text-gray-500">Versao 0.0.8</p>
+                <p class="text-xs text-gray-400 mt-2">Este é um projeto em desenvolvimento, saiba mais sobre o <a href="https://github.com/Daniel-P-Lima/MoneyManagement" target="_blank" class="font-semibold text-blue-600 underline underline-offset-2 hover:text-blue-800 transition-colors">Pocketo</a></p>
                 <p class="text-xs text-gray-400 mt-2">Feito com Laravel + Vue.js</p>
             </div>
         </div>

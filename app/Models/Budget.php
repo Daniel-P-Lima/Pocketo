@@ -13,6 +13,8 @@ class Budget extends Model
 
     protected $fillable = ['category_id', 'amount', 'month', 'year'];
 
+    protected $appends = ['spent', 'spent_percentage'];
+
     protected function casts(): array
     {
         return [
