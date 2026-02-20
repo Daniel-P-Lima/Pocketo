@@ -58,7 +58,13 @@ php artisan key:generate
 sail artisan migrate
 ```
 
-**5. Install frontend dependencies and start dev server:**
+**5. Run seeders:**
+
+```bash
+sail artisan db:seed
+```
+
+**6. Install frontend dependencies and start dev server:**
 
 ```bash
 npm install
