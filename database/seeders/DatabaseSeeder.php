@@ -18,5 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call(IconSeeder::class);
         $this->call(CategorySeeder::class);
         $this->call(StashSeeder::class);
+        $this->call(TransactionsSeeder::class);
     }
 }
