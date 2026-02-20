@@ -1,4 +1,4 @@
-# MoneyManagement
+# Pocket
 
 A personal finance management web app to track income, expenses, budgets, and savings goals. Built with a Brazilian Real (R$) currency context.
 
