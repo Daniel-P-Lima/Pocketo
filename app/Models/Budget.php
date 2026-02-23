@@ -18,7 +18,7 @@ class Budget extends Model
     protected function casts(): array
     {
         return [
-            'amount' => 'integer',
+            'amount' => 'decimal:2',
             'month' => 'integer',
             'year' => 'integer',
         ];

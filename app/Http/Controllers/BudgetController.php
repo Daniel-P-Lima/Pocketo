@@ -43,14 +43,18 @@ class BudgetController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('budgets.create', compact('categories', 'month', 'year'));
+        return Inertia::render('Budgets/Create', [
+            'categories' => $categories,
+            'month'      => $month,
+            'year'       => $year,
+        ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
-            'amount' => 'required|integer|min:1',
+            'amount' => 'required|numeric|min:0.01',
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2020',
         ]);
@@ -74,13 +78,15 @@ class BudgetController extends Controller
     {
         $budget->load('category');
 
-        return view('budgets.edit', compact('budget'));
+        return Inertia::render('Budgets/Edit', [
+            'budget' => $budget,
+        ]);
     }
 
     public function update(Request $request, Budget $budget)
     {
         $validated = $request->validate([
-            'amount' => 'required|integer|min:1',
+            'amount' => 'required|numeric|min:0.01',
         ]);
 
         $budget->update($validated);

@@ -48,6 +48,7 @@ class DashboardController extends Controller
             'budgetAlerts' => $budgetAlerts,
             'trendData' => $trendData,
             'categoryData' => $categoryData,
+            'header' => 'Dashboard'
         ]);
     }
 

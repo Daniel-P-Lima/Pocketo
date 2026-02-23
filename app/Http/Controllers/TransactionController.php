@@ -31,7 +31,7 @@ class TransactionController extends Controller
         $totalExpense = Transaction::inMonth($month, $year)->expense()->sum('amount');
 
         return Inertia::render('Transactions/Index',[
-            'header' => "Dashboard",
+            'header' => "Transações",
             'transactions' => $transactions,
             'month' => $month,
             'year' => $year,
@@ -59,7 +59,7 @@ class TransactionController extends Controller
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'type' => 'required|in:income,expense',
-            'amount' => 'required|integer|min:1',
+            'amount' => 'required|numeric|min:0.01',
             'description' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
             'date' => 'required|date',
@@ -100,7 +100,7 @@ class TransactionController extends Controller
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'type' => 'required|in:income,expense',
-            'amount' => 'required|integer|min:1',
+            'amount' => 'required|numeric|min:0.01',
             'description' => 'required|string|max:255',
             'notes' => 'nullable|string|max:1000',
             'date' => 'required|date',
