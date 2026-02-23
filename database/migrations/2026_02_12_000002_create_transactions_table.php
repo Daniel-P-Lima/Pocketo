@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->string('type', 10); // income or expense
-            $table->integer('amount'); // stored in centavos
+            $table->decimal('amount', 10, 2);
             $table->string('description', 255);
             $table->text('notes')->nullable();
             $table->date('date');
