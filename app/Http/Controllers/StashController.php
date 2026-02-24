@@ -55,7 +55,7 @@ class StashController extends Controller
     {
         return Inertia::render('Stash/Show', [
             'stash' => $stash,
-            'header' => 'Detalhes ' . $stash->name,
+            'header' => 'Detalhes caixinha: ' . $stash->name,
             'backUrl' => route('stash.index'),
         ]);
     }
@@ -65,15 +65,28 @@ class StashController extends Controller
      */
     public function edit(Stash $stash)
     {
-        //
+        return Inertia::render('Stash/Edit', [
+            'stash' => $stash,
+            'header' => 'Editar caixinha: ' . $stash->name,
+            'backUrl' => route('stash.show', $stash),
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateStashRequest $request, Stash $stash)
+    public function update(Request $request, Stash $stash)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'goal_amount' => 'required|numeric|min:1',
+            'purpose' => 'required|string|max:255',
+        ]);
+
+        $stash->update($validated);
+
+        return redirect()->route('stash.show', $stash)->with('success', 'Caixinha atualizada!');
     }
 
     /**
@@ -81,6 +94,8 @@ class StashController extends Controller
      */
     public function destroy(Stash $stash)
     {
-        //
+        $stash->delete();
+
+        return redirect()->route('stash.index')->with('success', 'Caixinha excluída!');
     }
 }
