@@ -17,7 +17,10 @@ class StashFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'name'          => fake()->word(),
+            'amount'        => fake()->randomFloat(2, 1, 2000),
+            'goal_amount'   => fake()->randomFloat(2, 1, 20000),
+            'purpose'       => fake()->word(),
         ];
     }
 }

@@ -30,8 +30,6 @@ const backUrl = computed(() => page.props.backUrl ?? null);
             </Transition>
         </main>
     </div>
-
-    <BottomNav />
 </template>
 
 <style>
