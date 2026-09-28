@@ -1,5 +1,6 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
+import { isShifted, longMonth } from '../../referenceMonth';
 
 const props = defineProps({
     transaction: Object,
@@ -52,9 +53,20 @@ function destroy() {
                         {{ transaction.category.icon }} {{ transaction.category.name }}
                     </span>
                 </div>
+                <div v-if="transaction.bank" class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Banco</span>
+                    <span class="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full" :style="{ backgroundColor: transaction.bank.color }"></span>
+                        {{ transaction.bank.name }}
+                    </span>
+                </div>
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-500">Data</span>
                     <span class="text-sm font-medium text-gray-900">{{ formatDate(transaction.date) }}</span>
+                </div>
+                <div v-if="isShifted(transaction)" class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Conta no mês</span>
+                    <span class="text-sm font-medium text-violet-600 capitalize">{{ longMonth(transaction.reference_month) }}</span>
                 </div>
                 <div v-if="transaction.notes">
                     <span class="text-sm text-gray-500">Observacoes</span>

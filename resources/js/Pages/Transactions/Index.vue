@@ -12,9 +12,15 @@ const props = defineProps({
     month: Number,
     year: Number,
     type: String,
+    bank: Number,
+    banks: { type: Array, default: () => [] },
     totalIncome: Number,
     totalExpense: Number,
 })
+
+function filterUrl({ type = props.type ?? '', bank = props.bank ?? '' } = {}) {
+    return `/transactions?month=${props.month}&year=${props.year}&type=${type}&bank=${bank}`;
+}
 
 const typeFilters = [
     { value: '', label: 'Todos' },
@@ -48,10 +54,19 @@ function formatBrl(amount) {
             </div>
         </div>
 
+        <Link href="/transactions/import"
+              class="flex items-center justify-center gap-2 bg-white rounded-xl py-2.5 shadow-sm text-sm font-medium text-violet-600
+                     transition-all duration-200 hover:shadow-md active:scale-[0.98]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M16 8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Importar fatura (CSV)
+        </Link>
+
         <!-- Type filter tabs -->
         <div class="flex gap-1 bg-gray-200 rounded-xl p-1">
             <Link v-for="filter in typeFilters" :key="filter.value"
-                :href="`/transactions?month=${month}&year=${year}&type=${filter.value}`" preserve-scroll :class="['flex-1 text-center py-2 rounded-lg text-sm font-medium',
+                :href="filterUrl({ type: filter.value })" preserve-scroll :class="['flex-1 text-center py-2 rounded-lg text-sm font-medium',
                     'transition-all duration-200',
                     (type ?? '') === filter.value
                         ? 'bg-white text-gray-900 shadow-sm'
@@ -60,9 +75,25 @@ function formatBrl(amount) {
             </Link>
         </div>
 
+        <!-- Bank filter -->
+        <div v-if="banks.length" class="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1">
+            <Link :href="filterUrl({ bank: '' })" preserve-scroll
+                  :class="['px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all duration-200',
+                           !bank ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-600 border-gray-200']">
+                Todos os bancos
+            </Link>
+            <Link v-for="b in banks" :key="b.id" :href="filterUrl({ bank: b.id })" preserve-scroll
+                  :class="['flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all duration-200',
+                           bank === b.id ? 'text-white border-transparent' : 'bg-white text-gray-600 border-gray-200']"
+                  :style="bank === b.id ? { backgroundColor: b.color } : {}">
+                <span v-if="bank !== b.id" class="w-2 h-2 rounded-full" :style="{ backgroundColor: b.color }"></span>
+                {{ b.name }}
+            </Link>
+        </div>
+
         <!-- Transaction list -->
         <Transition name="fade" mode="out-in">
-            <div :key="(type ?? '') + month + year">
+            <div :key="(type ?? '') + (bank ?? '') + month + year">
                 <EmptyState v-if="!transactions.length" message="Nenhuma transacao neste mes."
                     action-url="/transactions/create" action-label="Adicionar Transacao" />
 
