@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Budget;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -58,14 +59,25 @@ class DashboardController extends Controller
         $income = [];
         $expense = [];
 
-        for ($i = 5; $i >= 0; $i--) {
-            $d = now()->subMonths($i);
+        foreach ($this->lastSixMonths($month, $year) as $d) {
             $labels[] = $d->translatedFormat('M/y');
             $income[] = Transaction::inMonth($d->month, $d->year)->income()->sum('amount');
             $expense[] = Transaction::inMonth($d->month, $d->year)->expense()->sum('amount');
         }
 
         return compact('labels', 'income', 'expense');
+    }
+
+    /**
+     * Os 6 meses que terminam no mês selecionado, do mais antigo para o mais recente.
+     *
+     * @return array<int, Carbon>
+     */
+    private function lastSixMonths(int $month, int $year): array
+    {
+        $end = Carbon::create($year, $month, 1);
+
+        return array_map(fn ($i) => $end->copy()->subMonths($i), range(5, 0));
     }
 
     private function buildCategoryData(int $month, int $year): array
@@ -98,9 +110,11 @@ class DashboardController extends Controller
 
     public function spendingTrend(Request $request)
     {
+        $month = (int) $request->get('month', now()->month);
+        $year = (int) $request->get('year', now()->year);
+
         $data = collect();
-        for ($i = 5; $i >= 0; $i--) {
-            $d = now()->subMonths($i);
+        foreach ($this->lastSixMonths($month, $year) as $d) {
             $data->push([
                 'label' => $d->translatedFormat('M/y'),
                 'expense' => Transaction::inMonth($d->month, $d->year)->expense()->sum('amount'),

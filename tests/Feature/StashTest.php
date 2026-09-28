@@ -62,7 +62,7 @@ class StashTest extends TestCase
 
         $response->assertInertia(fn(Assert $page) => $page
             ->component('Stash/Show')
-            ->where('header', 'Detalhes ' . $stash->name)
+            ->where('header', 'Detalhes caixinha: ' . $stash->name)
             ->where('backUrl', route('stash.index'))
         );
     }

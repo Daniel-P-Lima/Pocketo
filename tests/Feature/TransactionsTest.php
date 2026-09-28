@@ -90,6 +90,30 @@ class TransactionsTest extends TestCase
         $this->assertEquals(120, $october->spent);
     }
 
+    public function test_budget_keeps_cents(): void
+    {
+        $category = Category::factory()->create(['type' => 'expense']);
+        Transaction::factory()->create([
+            'category_id' => $category->id, 'type' => 'expense', 'amount' => 120.90, 'date' => '2026-10-02',
+        ]);
+
+        $budget = Budget::create(['category_id' => $category->id, 'amount' => 200.50, 'month' => 10, 'year' => 2026]);
+
+        $this->assertSame(120.90, $budget->spent);
+        $this->assertSame(79.60, $budget->remaining);
+        $this->assertSame(60.3, $budget->spent_percentage);
+        $this->assertSame('R$ 120,90', $budget->category->transactions()->first()->formatted_amount);
+    }
+
+    public function test_budget_with_zero_amount_has_zero_percentage(): void
+    {
+        $category = Category::factory()->create(['type' => 'expense']);
+
+        $budget = Budget::create(['category_id' => $category->id, 'amount' => 0, 'month' => 10, 'year' => 2026]);
+
+        $this->assertEquals(0, $budget->spent_percentage);
+    }
+
     public function test_update_without_reference_month_follows_new_date(): void
     {
         $transaction = Transaction::factory()->create(['date' => '2026-09-03']);
