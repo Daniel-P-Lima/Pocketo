@@ -38,8 +38,7 @@ class Budget extends Model
     {
         return Transaction::where('category_id', $this->category_id)
             ->where('type', 'expense')
-            ->whereMonth('date', $this->month)
-            ->whereYear('date', $this->year)
+            ->inMonth($this->month, $this->year)
             ->sum('amount');
     }
 
