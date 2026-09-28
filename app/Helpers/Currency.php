@@ -12,8 +12,11 @@ class Currency
         return (int) round((float) $clean * 100);
     }
 
-    public static function format(int $centavos): string
+    /**
+     * Formata um valor em reais, do jeito que é guardado no banco (ex: "140.41" -> "R$ 140,41").
+     */
+    public static function format(float|int|string $reais): string
     {
-        return 'R$ ' . number_format($centavos / 100, 2, ',', '.');
+        return 'R$ ' . number_format((float) $reais, 2, ',', '.');
     }
 }

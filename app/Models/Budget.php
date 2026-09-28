@@ -34,7 +34,7 @@ class Budget extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function getSpentAttribute(): int
+    public function getSpentAttribute(): float
     {
         return Transaction::where('category_id', $this->category_id)
             ->where('type', 'expense')
@@ -44,16 +44,17 @@ class Budget extends Model
 
     public function getSpentPercentageAttribute(): float
     {
-        if ($this->amount === 0) {
+        // amount vem do cast decimal como string ("0.00"), por isso a comparação numérica
+        if ((float) $this->amount <= 0) {
             return 0;
         }
 
         return min(100, round(($this->spent / $this->amount) * 100, 1));
     }
 
-    public function getRemainingAttribute(): int
+    public function getRemainingAttribute(): float
     {
-        return max(0, $this->amount - $this->spent);
+        return max(0, round($this->amount - $this->spent, 2));
     }
 
     public function scopeForMonth($query, int $month, int $year)
