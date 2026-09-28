@@ -1,10 +1,12 @@
 <script setup>
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import BankPicker from '../../Components/BankPicker.vue';
 
 const props = defineProps({
     expenseCategories: Array,
     incomeCategories: Array,
+    banks: Array,
 });
 
 const form = useForm({
@@ -12,8 +14,16 @@ const form = useForm({
     amount: '',
     description: '',
     category_id: '',
+    bank_id: null,
     date: new Date().toISOString().slice(0, 10),
+    reference_month: new Date().toISOString().slice(0, 7),
     notes: '',
+});
+
+// Reference month follows the date until the user picks another one (e.g. card bill month)
+const referenceTouched = ref(false);
+watch(() => form.date, (date) => {
+    if (!referenceTouched.value && date) form.reference_month = date.slice(0, 7);
 });
 
 const visibleCategories = computed(() =>
@@ -122,6 +132,9 @@ function submit() {
             <p v-if="form.errors.category_id" class="text-red-500 text-xs mt-1">{{ form.errors.category_id }}</p>
         </div>
 
+        <!-- Bank -->
+        <BankPicker v-model="form.bank_id" :banks="banks" :error="form.errors.bank_id" />
+
         <!-- Date -->
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
@@ -130,6 +143,17 @@ function submit() {
                           transition-all duration-200
                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md">
             <p v-if="form.errors.date" class="text-red-500 text-xs mt-1">{{ form.errors.date }}</p>
+        </div>
+
+        <!-- Reference month -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mês de referência</label>
+            <input type="month" v-model="form.reference_month" required @input="referenceTouched = true"
+                   class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm
+                          transition-all duration-200
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md">
+            <p class="text-xs text-gray-400 mt-1">Compra no cartão? Use o mês em que a fatura vence.</p>
+            <p v-if="form.errors.reference_month" class="text-red-500 text-xs mt-1">{{ form.errors.reference_month }}</p>
         </div>
 
         <!-- Notes -->

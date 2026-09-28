@@ -1,6 +1,7 @@
 <script setup>
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useForm, router } from '@inertiajs/vue3';
+import BankPicker from '../../Components/BankPicker.vue';
 
 const props = defineProps({
     transaction: {
@@ -15,6 +16,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    banks: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const form = useForm({
@@ -22,8 +27,16 @@ const form = useForm({
     amount: props.transaction.amount ?? '',
     description: props.transaction.description ?? '',
     category_id: props.transaction.category_id ?? null,
-    date: props.transaction.date ?? '',
+    bank_id: props.transaction.bank_id ?? null,
+    date: props.transaction.date?.slice(0, 10) ?? '',
+    reference_month: props.transaction.reference_month ?? '',
     notes: props.transaction.notes ?? '',
+});
+
+// Keep following the date only if the reference month was never customized
+const referenceTouched = ref(form.reference_month !== form.date.slice(0, 7));
+watch(() => form.date, (date) => {
+    if (!referenceTouched.value && date) form.reference_month = date.slice(0, 7);
 });
 
 const visibleCategories = computed(() =>
@@ -134,6 +147,9 @@ function destroy() {
             <p v-if="form.errors.category_id" class="text-red-500 text-xs mt-1">{{ form.errors.category_id }}</p>
         </div>
 
+        <!-- Bank -->
+        <BankPicker v-model="form.bank_id" :banks="banks" :error="form.errors.bank_id" />
+
         <!-- Date -->
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Data</label>
@@ -142,6 +158,17 @@ function destroy() {
                           transition-all duration-200
                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md">
             <p v-if="form.errors.date" class="text-red-500 text-xs mt-1">{{ form.errors.date }}</p>
+        </div>
+
+        <!-- Reference month -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Mês de referência</label>
+            <input type="month" v-model="form.reference_month" required @input="referenceTouched = true"
+                   class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm
+                          transition-all duration-200
+                          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:shadow-md">
+            <p class="text-xs text-gray-400 mt-1">Compra no cartão? Use o mês em que a fatura vence.</p>
+            <p v-if="form.errors.reference_month" class="text-red-500 text-xs mt-1">{{ form.errors.reference_month }}</p>
         </div>
 
         <!-- Notes -->

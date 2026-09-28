@@ -1,5 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { isShifted, shortMonth } from '../referenceMonth';
 
 const props = defineProps({
     transaction: Object,
@@ -26,8 +27,18 @@ function formatBrl(amount) {
 
         <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-gray-900 truncate">{{ transaction.description }}</p>
-            <p class="text-xs text-gray-500">
-                {{ transaction.category.name }} &middot; {{ new Date(transaction.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) }}
+            <p class="text-xs text-gray-500 flex items-center gap-1 min-w-0">
+                <span class="truncate">{{ transaction.category.name }} &middot; {{ new Date(transaction.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) }}</span>
+                <template v-if="transaction.bank">
+                    &middot;
+                    <span class="inline-flex items-center gap-1 whitespace-nowrap">
+                        <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: transaction.bank.color }"></span>
+                        {{ transaction.bank.name }}
+                    </span>
+                </template>
+                <span v-if="isShifted(transaction)" class="whitespace-nowrap text-violet-600">
+                    &middot; fatura {{ shortMonth(transaction.reference_month) }}
+                </span>
             </p>
         </div>
 
